@@ -28,6 +28,21 @@ function useInView(threshold = 0.15) {
     return [ref, inView];
 }
 
+/* ────────────────── Parallax Scroll Hook ────────────────── */
+function useParallax(speed = 0.1) {
+    const [offset, setOffset] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setOffset(window.scrollY * speed);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [speed]);
+
+    return offset;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    SECTION 1 — Product Features
    ═══════════════════════════════════════════════════════════════════ */
@@ -128,9 +143,10 @@ function ProductFeatures() {
 
 function FabricQuality() {
     const [ref, inView] = useInView(0.15);
+    const parallaxOffset = useParallax(0.05);
 
     return (
-        <section ref={ref} className="py-24 md:py-32 px-6 bg-brand-50" id="fabric">
+        <section ref={ref} className="py-24 md:py-32 px-6 bg-brand-50 overflow-hidden" id="fabric">
             <div className="max-w-6xl mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-20 items-center">
                     {/* Left — Text */}
@@ -162,8 +178,8 @@ function FabricQuality() {
                                 { value: "100%", unit: "", label: "Cotton" },
                                 { value: "60+", unit: "", label: "Colors" },
                             ].map((stat) => (
-                                <div key={stat.label}>
-                                    <div className="font-display text-3xl font-bold text-brand-900">
+                                <div key={stat.label} className="group cursor-default">
+                                    <div className="font-display text-3xl font-bold text-brand-900 group-hover:text-brand-700 transition-colors">
                                         {stat.value}
                                         <span className="text-sm text-brand-400 ml-0.5">{stat.unit}</span>
                                     </div>
@@ -175,13 +191,14 @@ function FabricQuality() {
                         </div>
                     </div>
 
-                    {/* Right — Image */}
+                    {/* Right — Image with Parallax */}
                     <div className={`transition-all duration-1000 delay-300 ${inView ? "opacity-100 translate-x-0" : "opacity-0 translate-x-16"}`}>
-                        <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-brand-900/10">
+                        <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-brand-900/10 transform transition-transform duration-700 hover:scale-[1.02]">
                             <img
                                 src="/frames/ezgif-frame-050.jpg"
                                 alt="Premium cotton fabric close-up"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover transition-transform duration-100 ease-out"
+                                style={{ transform: `translateY(${parallaxOffset % 40}px) scale(1.1)` }}
                                 loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
@@ -251,19 +268,19 @@ function CollarStyles() {
                         >
                             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-4
                             shadow-lg shadow-brand-900/5 group-hover:shadow-2xl 
-                            group-hover:shadow-brand-900/15 transition-shadow duration-500">
+                            group-hover:shadow-brand-900/15 group-hover:-translate-y-2 transition-all duration-500 ease-out">
                                 <img
                                     src={`/frames/ezgif-frame-${String(style.frameIndex).padStart(3, "0")}.jpg`}
                                     alt={style.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                                     loading="lazy"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent
+                                <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-transparent
                               opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100
-                              translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                                    <span className="text-white text-sm font-light tracking-wider">
-                                        Explore →
+                                <div className="absolute bottom-6 left-6 right-6 opacity-0 group-hover:opacity-100
+                              translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">
+                                    <span className="text-white text-xs font-medium tracking-[0.2em] uppercase">
+                                        View Details →
                                     </span>
                                 </div>
                             </div>
@@ -304,12 +321,12 @@ function BuySection() {
         <section ref={ref} className="py-24 md:py-32 px-6 bg-brand-50" id="buy">
             <div className="max-w-4xl mx-auto">
                 <div className={`text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}>
-                    {/* Product image */}
-                    <div className="w-64 h-64 md:w-80 md:h-80 mx-auto mb-10 relative">
+                    {/* Floating Product image */}
+                    <div className="w-64 h-64 md:w-80 md:h-80 mx-auto mb-10 relative animate-float">
                         <img
                             src="/frames/ezgif-frame-001.jpg"
                             alt="Premium Cotton T-Shirt"
-                            className="w-full h-full object-contain drop-shadow-2xl"
+                            className="w-full h-full object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.15)]"
                             loading="lazy"
                         />
                     </div>
@@ -317,31 +334,31 @@ function BuySection() {
                     <span className="text-xs font-medium tracking-[0.3em] uppercase text-brand-400 block mb-2">
                         ÉLEV Essentials
                     </span>
-                    <h2 className="font-display text-3xl md:text-4xl font-bold text-brand-900 tracking-tight">
+                    <h2 className="font-display text-3xl md:text-5xl font-bold text-brand-900 tracking-tight">
                         Premium Cotton T-Shirt
                     </h2>
-                    <div className="mt-3 flex items-center justify-center gap-3">
-                        <span className="font-display text-3xl font-bold text-brand-900">$89</span>
-                        <span className="text-sm text-brand-400 line-through">$129</span>
-                        <span className="text-xs px-2 py-1 bg-brand-900 text-white rounded-full font-medium">
+                    <div className="mt-4 flex items-center justify-center gap-4">
+                        <span className="font-display text-4xl font-bold text-brand-900">$89</span>
+                        <span className="text-lg text-brand-400 line-through font-light">$129</span>
+                        <span className="text-xs px-3 py-1 bg-brand-900 text-white rounded-full font-bold tracking-wider">
                             SAVE 31%
                         </span>
                     </div>
 
                     {/* Color Selector */}
-                    <div className={`mt-10 transition-all duration-1000 delay-200 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-                        <span className="text-xs text-brand-400 tracking-widest uppercase block mb-4">
-                            Color — {colors[selectedColor].name}
+                    <div className={`mt-12 transition-all duration-1000 delay-200 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+                        <span className="text-[10px] text-brand-400 tracking-[0.3em] uppercase block mb-6 font-semibold">
+                            Select Color — {colors[selectedColor].name}
                         </span>
-                        <div className="flex items-center justify-center gap-3">
+                        <div className="flex items-center justify-center gap-4">
                             {colors.map((color, i) => (
                                 <button
                                     key={color.name}
                                     onClick={() => setSelectedColor(i)}
-                                    className={`w-10 h-10 rounded-full transition-all duration-300 
-                            hover:scale-110 active:scale-95
+                                    className={`w-8 h-8 rounded-full transition-all duration-300 
+                            hover:scale-125 active:scale-90
                             ${selectedColor === i
-                                            ? "ring-2 ring-offset-4 ring-brand-900"
+                                            ? "ring-2 ring-offset-4 ring-brand-900 scale-110 shadow-lg"
                                             : "ring-1 ring-brand-200 hover:ring-brand-400"
                                         }`}
                                     style={{ backgroundColor: color.value }}
@@ -352,20 +369,20 @@ function BuySection() {
                     </div>
 
                     {/* Size Selector */}
-                    <div className={`mt-8 transition-all duration-1000 delay-400 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-                        <span className="text-xs text-brand-400 tracking-widest uppercase block mb-4">
-                            Size — {sizes[selectedSize]}
+                    <div className={`mt-10 transition-all duration-1000 delay-400 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+                        <span className="text-[10px] text-brand-400 tracking-[0.3em] uppercase block mb-6 font-semibold">
+                            Select Size — {sizes[selectedSize]}
                         </span>
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-3">
                             {sizes.map((size, i) => (
                                 <button
                                     key={size}
                                     onClick={() => setSelectedSize(i)}
-                                    className={`w-12 h-12 rounded-xl font-medium text-sm transition-all duration-300 
-                            hover:scale-105 active:scale-95
+                                    className={`w-14 h-14 rounded-2xl font-display font-bold text-sm transition-all duration-500 
+                            hover:scale-110 active:scale-95
                             ${selectedSize === i
-                                            ? "bg-brand-900 text-white shadow-lg shadow-brand-900/25"
-                                            : "bg-white text-brand-600 border border-brand-200 hover:border-brand-400"
+                                            ? "bg-brand-900 text-white shadow-xl shadow-brand-900/30 scale-105"
+                                            : "bg-white text-brand-900 border border-brand-200 hover:border-brand-900 hover:shadow-lg"
                                         }`}
                                 >
                                     {size}
@@ -375,20 +392,25 @@ function BuySection() {
                     </div>
 
                     {/* Buy Button */}
-                    <div className={`mt-10 transition-all duration-1000 delay-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+                    <div className={`mt-14 transition-all duration-1000 delay-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
                         <button
-                            className="group relative px-16 py-4 bg-brand-900 text-white rounded-full font-display
-                       font-semibold text-lg tracking-wide overflow-hidden
-                       hover:shadow-2xl hover:shadow-brand-900/30 transition-all duration-500
+                            className="group relative px-20 py-5 bg-brand-900 text-white rounded-full font-display
+                       font-bold text-xl tracking-[0.05em] overflow-hidden
+                       hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] transition-all duration-500
                        hover:scale-105 active:scale-[0.98]"
                         >
-                            <span className="relative z-10">Buy Now</span>
+                            <span className="relative z-10 uppercase italic">Add to Collection</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800
                             opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         </button>
-                        <p className="text-xs text-brand-400 mt-4 font-light">
-                            Free shipping · 30-day returns · Lifetime warranty
-                        </p>
+                        <div className="flex items-center justify-center gap-6 mt-8">
+                            {["Free shipping", "30-day returns", "Lifetime warranty"].map((perk) => (
+                                <div key={perk} className="flex items-center gap-2">
+                                    <div className="w-1 h-1 rounded-full bg-brand-300" />
+                                    <span className="text-[10px] text-brand-400 font-medium tracking-widest uppercase">{perk}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
